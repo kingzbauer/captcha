@@ -25,6 +25,7 @@ def retrieve_dataset(files_path):
 
 	def decode_file(file, file_type, label):
 		"""Decodes the raw data as either png or jpeg"""
+		print('here')
 		if file_type == 'jpg':
 			return tf.cast(tf.image.decode_jpeg(file, channels=3), tf.float32)/255.0, label	
 		else:
@@ -51,3 +52,5 @@ if __name__ == '__main__':
 
 	for e in ds.take(2):
 		print(e[0].numpy().shape)
+		plt.imshow(e[0].numpy())
+	plt.show()
