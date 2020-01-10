@@ -31,10 +31,8 @@ def retrieve_dataset(files_path):
 			return tf.image.decode_png(file), label
 
 	def transform_string_labels_to_classes(image, string_label):
-		label = []
-		for symbol in tf.strings.bytes_split(string_label):
-			label.append(LABELS_TO_CLASSES[symbol.numpy().decode()])
-		return image, label 
+		return image, [LABELS_TO_CLASSES[label] 
+				for label in string_label.numpy().decode()] 
 	
 	ds = ds.map(transform).map(decode_file).map(
 		lambda i, l: tf.py_function(
