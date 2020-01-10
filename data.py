@@ -26,19 +26,23 @@ def retrieve_dataset(files_path):
 	def decode_file(file, file_type, label):
 		"""Decodes the raw data as either png or jpeg"""
 		if file_type == 'jpg':
-			return tf.image.decode_jpeg(file), label	
+			return tf.cast(tf.image.decode_jpeg(file), tf.float32)/255.0, label	
 		else:
-			return tf.image.decode_png(file), label
+			return tf.cast(tf.image.decode_png(file), tf.float32)/255.0, label
 
 	def transform_string_labels_to_classes(image, string_label):
-		return image, [LABELS_TO_CLASSES[label] 
-				for label in string_label.numpy().decode()] 
+		return image, tf.cast(
+				tf.one_hot(
+					[LABELS_TO_CLASSES[label] 
+						for label in string_label.numpy().decode()], 
+					len(CLASSES)), 
+				tf.int32) 
 	
 	ds = ds.map(transform).map(decode_file).map(
 		lambda i, l: tf.py_function(
 			func=transform_string_labels_to_classes, 
 			inp=[i, l], 
-			Tout=[tf.uint8, tf.int32]))
+			Tout=[tf.float32, tf.int32]))
 
 	return ds
 
