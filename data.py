@@ -1,7 +1,15 @@
+import string
+
 import tensorflow as tf
 from matplotlib import pyplot as plt
 
-tf.compat.v1.enable_eager_execution()
+print("Eager execution: {}".format(tf.executing_eagerly()))
+
+LABELS = list(string.digits + string.ascii_lowercase)
+CLASSES = list(range(len(LABELS)))
+
+LABELS_TO_CLASSES = dict(zip(LABELS, CLASSES))
+CLASSES_TO_LABELS = dict(zip(CLASSES, LABELS))
 
 def retrieve_dataset(files_path):
 	ds = tf.data.Dataset.list_files(files_path)	
@@ -21,12 +29,23 @@ def retrieve_dataset(files_path):
 			return tf.image.decode_jpeg(file), label	
 		else:
 			return tf.image.decode_png(file), label
-	
-	ds = ds.map(transform).map(decode_file)
 
-	for i, e in enumerate(ds.take(4)):
-		plt.imshow(e[0].numpy())
-		plt.show()
+	def transform_string_labels_to_classes(image, string_label):
+		label = []
+		for symbol in tf.strings.bytes_split(string_label):
+			label.append(LABELS_TO_CLASSES[symbol.numpy().decode()])
+		return image, label 
+	
+	ds = ds.map(transform).map(decode_file).map(
+		lambda i, l: tf.py_function(
+			func=transform_string_labels_to_classes, 
+			inp=[i, l], 
+			Tout=[tf.uint8, tf.int32]))
+
+	return ds
 
 if __name__ == '__main__':
-	retrieve_dataset('../images/*.*')
+	ds = retrieve_dataset('../images/*.*')
+
+	for e in ds.take(2):
+		print(e[1].numpy())
