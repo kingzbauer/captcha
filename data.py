@@ -1,7 +1,6 @@
 import string
 
 import tensorflow as tf
-from matplotlib import pyplot as plt
 
 print("Eager execution: {}".format(tf.executing_eagerly()))
 
@@ -33,11 +32,7 @@ def retrieve_dataset(files_path):
 
 	def transform_string_labels_to_classes(image, string_label):
 		return image, tf.cast(
-				tf.one_hot(
-					[LABELS_TO_CLASSES[label] 
-						for label in string_label.numpy().decode()], 
-					len(CLASSES)), 
-				tf.int32) 
+			[LABELS_TO_CLASSES[label] for label in string_label.numpy().decode()], tf.int32) 
 	
 	ds = ds.map(transform).map(decode_file).map(
 		lambda i, l: tf.py_function(
@@ -51,6 +46,4 @@ if __name__ == '__main__':
 	ds = retrieve_dataset('../images/*.*')
 
 	for e in ds.take(2):
-		print(e[0].numpy().shape)
-		plt.imshow(e[0].numpy())
-	plt.show()
+		print(e[1])
